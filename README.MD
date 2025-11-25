@@ -23,7 +23,7 @@ The agent uses a **cyclic graph architecture** (not a linear chain) to self-corr
 
 ### How It Works
 
-```
+```text
 User Query
     ↓
 [Agent Node] → Analyzes intent
@@ -67,8 +67,20 @@ User Query
 
 3. **Install dependencies**
 
+   **Option A: Using `uv` (Recommended - Fast & Modern)**
+
    ```bash
-   pip install langchain langgraph langchain-google-genai tavily-python chromadb python-dotenv
+   # Install uv if you haven't already
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   
+   # Install dependencies
+   uv pip install -r requirements.txt
+   ```
+
+   **Option B: Using `pip` (Traditional)**
+
+   ```bash
+   pip install -r requirements.txt
    ```
 
 4. **Set up environment variables**
@@ -107,12 +119,13 @@ User Query
 
 ## 📁 Project Structure
 
-```
+```plaintext
 Research Agent/
 ├── agent.py          # Main agent logic with LangGraph workflow
 ├── database.py       # Vector database setup and document ingestion
 ├── tools.py          # Tool definitions (Tavily search, RAG retrieval)
 ├── test_gemini.py    # API connection test
+├── requirements.txt  # Python dependencies
 ├── notes.txt         # Your private knowledge base (customize this!)
 ├── chroma_db/        # Vector database storage (auto-generated)
 ├── .env              # API keys (not tracked in git)
@@ -121,23 +134,23 @@ Research Agent/
 
 ## 💡 Usage Examples
 
-**Example 1: Public Information Query**
+### Example 1: Public Information Query
 
-```
+```text
 You: What's the latest news about AI?
 🤖 Agent: [Searches web via Tavily and returns current information]
 ```
 
-**Example 2: Private Information Query**
+### Example 2: Private Information Query
 
-```
+```text
 You: What's my project deadline?
 🤖 Agent: [Searches your notes.txt via RAG and returns stored information]
 ```
 
-**Example 3: Mixed Query**
+### Example 3: Mixed Query
 
-```
+```text
 You: Compare my favorite movie to current box office hits
 🤖 Agent: [Uses RAG for your favorite, Tavily for current hits, then synthesizes]
 ```
@@ -148,13 +161,13 @@ Unlike traditional AI agents that run linearly, this project uses **LangGraph** 
 
 ### Traditional Agent (Linear)
 
-```
+```text
 User → LLM → Tool → Answer
 ```
 
 ### LangGraph Agent (Cyclic)
 
-```
+```text
 User → [Agent Node] ⟷ [Tool Node] → Answer
            ↑____________↓
         (Self-correction loop)
