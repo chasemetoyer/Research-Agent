@@ -1,91 +1,244 @@
-# 🤖 Autonomous Researcher Agent (LangGraph + RAG)
+# 🤖 Autonomous Research Agent
 
-## Project Overview
+An intelligent AI agent that autonomously routes queries between web search and private knowledge bases, built with LangGraph's agentic workflow framework.
 
-An intelligent agentic workflow designed to autonomously distinguish between general knowledge queries and proprietary internal data. Built to bridge the gap between LLMs and actionable business intelligence.
+## 🎯 What Does This Do?
 
-## Technical Architecture
+This project demonstrates an **autonomous research agent** that intelligently decides how to answer your questions:
 
-* **Orchestration:** LangGraph (State Machine/Cyclic Graph)
-* **LLM:** Google Gemini 1.5 Flash
-* **Memory (RAG):** ChromaDB (Vector Store) with Google Generative Embeddings (768-dim)
-* **External Tools:** Tavily API (Web Search)
+- **Public Information** → Searches the web using Tavily API
+- **Private Information** → Searches your local documents using RAG (Retrieval-Augmented Generation)
 
-## How It Works
+The agent uses a **cyclic graph architecture** (not a linear chain) to self-correct and re-assess retrieved data before generating final answers, making it more reliable and accurate than traditional chatbots.
 
-1. **Router Logic:** A conditional edge analyzes the user query intent.
-2. **Tool Routing:**
-    * *Public Info* → Triggers Tavily Search Node.
-    * *Private Info* → Triggers RAG Retrieval Node.
-3. **Self-Correction:** The agent utilizes a cyclical graph, allowing it to re-assess retrieved data before generating a final answer.
+## 🏗️ Technical Architecture
 
-## Setup
+### Core Components
 
-Notable Dependencies:
+- **Orchestration Framework:** LangGraph (State Machine with Cyclic Graphs)
+- **Language Model:** Google Gemini 2.5 Flash
+- **Vector Database:** ChromaDB with Google Generative AI Embeddings (768-dimensional)
+- **Web Search Tool:** Tavily API (optimized for AI agents)
+- **Memory System:** RAG (Retrieval-Augmented Generation)
 
-* Langchain
-* Langgraph - The framework for building our agents"brain" (state machine)
-* Langchain-Gemini
-* Tavily - the search engine tool optimized for AI agents
-* Chromadb - Our local vector database for memory (RAG)
-* Python-dotenv - to keep my API keys secure
+### How It Works
 
-# Steps
+```
+User Query
+    ↓
+[Agent Node] → Analyzes intent
+    ↓
+[Router Logic] → Conditional edge decides:
+    ├─→ Public info? → [Tavily Search Tool]
+    └─→ Private info? → [RAG Retrieval Tool]
+         ↓
+    [Tool Node] → Executes search
+         ↓
+    [Agent Node] → Re-evaluates results (self-correction loop)
+         ↓
+    Final Answer
+```
 
-# 1st Install all dependencies using pip
+**Key Feature:** The agent can loop back to tools multiple times until it has sufficient information, enabling multi-step reasoning and verification.
 
-# 2nd Then you need to make a tools.py file and run it to test the connection to Gemini and Tavily
+## 🚀 Getting Started
 
-* this is basically for testing the connection to the search tools and gemini to make sure everything is working correctly.
+### Prerequisites
 
-# 3rd. Next we are going to create a langchain agent using LangGraph to build our agents brain and loops
+- Python 3.11+
+- Google Gemini API Key
+- Tavily API Key
 
-## What is Langraph
+### Installation
 
-we are using LangGraph. Standard generic agents just run in a straight line. LangGraph allows us to build a loop (a state machine)
+1. **Clone the repository**
 
-This is basically a simple flow.
+   ```bash
+   git clone <your-repo-url>
+   cd "Research Agent"
+   ```
 
-1. **Start**: User asks a question
-2. **Agent Node**: The LLM thinks. "Do I know this, or do i NEED TO SEARCH?
-3. *Conditional Edge:
+2. **Create and activate virtual environment**
 
-* if it needs info -> go to **Tool Node**
+   ```bash
+   python3.11 -m venv .venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   ```
 
-* if it has the answer 0> go to **End**
+3. **Install dependencies**
 
-To create this flow , we need to Define the state
+   ```bash
+   pip install langchain langgraph langchain-google-genai tavily-python chromadb python-dotenv
+   ```
 
-* We need a way for the agent to keep track of the conversation (the user's question _ the search results + the final answer). In LnagGraph, this is called the **State**
+4. **Set up environment variables**
 
-This would be first start to create it by using creating a file named agent.py
+   Create a `.env` file in the project root:
 
-## Agent.py
+   ```env
+   GEMINI_API_KEY=your_gemini_api_key_here
+   TAVILY_API_KEY=your_tavily_api_key_here
+   ```
 
-    1. Define the state
-    2. Setup tools and LLM
-    3. Define the Agent Node
-    4. Define the Tool Node
-    5. Build the Graph
-    6. Define the Logic function
-    7. Add the Conditional Edge
-    8. Compile the graph    
+### Initial Setup & Testing
 
-# 4th We need to give our agent long-term memory using ChromaDB
+1. **Test API connections**
 
-I created a file named database.py  
+   ```bash
+   python test_gemini.py
+   python tools.py
+   ```
 
-* this file is responsible for loading the notes.txt file and creating a vector database from it.
-*
+   This verifies your Gemini and Tavily API keys are working correctly.
 
-The reason we use a vector database is because of this thing called **semantic similarity**
-this allows the ai agent to search through data almost instantaneously.
-We are basically turning  words and letters into numbers and then comparing them to find the most similar documents.
+2. **Build the vector database**
 
-* an examples of this is "Blue" and "Green" live in the same neighborhood,
-* pizza and burger live in a different neighborhood.
-* If you search for "Food," the AI looks at that neighborhood and finds "Pizza," even if you didn't type the word "Pizza."
+   ```bash
+   python database.py
+   ```
 
-# 5th Step now we need to give our agent another **tool** which is the **ChromaDB** tool we call this a **Retrieval Tool**
+   This loads `notes.txt` and creates a ChromaDB vector database for RAG retrieval.
 
-* go back to your agent.py file and add the following and add the retreiever tool to the tools list
+3. **Run the agent**
+
+   ```bash
+   python agent.py
+   ```
+
+## 📁 Project Structure
+
+```
+Research Agent/
+├── agent.py          # Main agent logic with LangGraph workflow
+├── database.py       # Vector database setup and document ingestion
+├── tools.py          # Tool definitions (Tavily search, RAG retrieval)
+├── test_gemini.py    # API connection test
+├── notes.txt         # Your private knowledge base (customize this!)
+├── chroma_db/        # Vector database storage (auto-generated)
+├── .env              # API keys (not tracked in git)
+└── README.MD         # This file
+```
+
+## 💡 Usage Examples
+
+**Example 1: Public Information Query**
+
+```
+You: What's the latest news about AI?
+🤖 Agent: [Searches web via Tavily and returns current information]
+```
+
+**Example 2: Private Information Query**
+
+```
+You: What's my project deadline?
+🤖 Agent: [Searches your notes.txt via RAG and returns stored information]
+```
+
+**Example 3: Mixed Query**
+
+```
+You: Compare my favorite movie to current box office hits
+🤖 Agent: [Uses RAG for your favorite, Tavily for current hits, then synthesizes]
+```
+
+## 🧠 Understanding LangGraph
+
+Unlike traditional AI agents that run linearly, this project uses **LangGraph** to create a **state machine** with loops:
+
+### Traditional Agent (Linear)
+
+```
+User → LLM → Tool → Answer
+```
+
+### LangGraph Agent (Cyclic)
+
+```
+User → [Agent Node] ⟷ [Tool Node] → Answer
+           ↑____________↓
+        (Self-correction loop)
+```
+
+### State Management
+
+The agent maintains conversation state using `AgentState`:
+
+- Tracks all messages (user questions, tool results, agent responses)
+- Uses `add_messages` reducer to append new messages without overwriting history
+- Enables multi-turn conversations with full context
+
+## 🔧 Customization
+
+### Add Your Own Documents
+
+1. Edit `notes.txt` with your private information
+2. Run `python database.py` to rebuild the vector database
+3. The agent will now search your custom knowledge base
+
+### Adjust Retrieval Settings
+
+In `agent.py`, modify the retriever parameters:
+
+```python
+retriever = db.as_retriever(search_kwargs={"k": 3})  # Return top 3 results
+```
+
+### Change the LLM
+
+Replace Gemini with another model:
+
+```python
+from langchain_openai import ChatOpenAI
+llm = ChatOpenAI(model="gpt-4")
+```
+
+## 🛠️ Key Dependencies
+
+| Package | Purpose |
+|---------|---------|
+| `langchain` | Core LLM framework |
+| `langgraph` | State machine and agentic workflow orchestration |
+| `langchain-google-genai` | Google Gemini integration |
+| `tavily-python` | Web search optimized for AI agents |
+| `chromadb` | Local vector database for semantic search |
+| `python-dotenv` | Secure API key management |
+
+## 🔍 How RAG Works
+
+**RAG (Retrieval-Augmented Generation)** enables semantic search over your documents:
+
+1. **Embedding:** Text is converted to 768-dimensional vectors
+2. **Storage:** Vectors are stored in ChromaDB
+3. **Search:** User queries are embedded and compared using cosine similarity
+4. **Retrieval:** Most similar documents are returned to the LLM
+
+**Example:** Searching for "food" will find "pizza" and "burger" even if you didn't type those exact words, because they live in the same semantic "neighborhood."
+
+## 🎓 Learning Resources
+
+This project demonstrates:
+
+- ✅ Agentic AI workflows with LangGraph
+- ✅ Tool-calling and function execution
+- ✅ RAG implementation with vector databases
+- ✅ Conditional routing and decision-making
+- ✅ State management in AI applications
+- ✅ Self-correcting AI systems
+
+## 📝 License
+
+MIT License - Feel free to use this project for learning and development.
+
+## 🤝 Contributing
+
+Contributions welcome! Feel free to:
+
+- Add new tools (e.g., calculator, database queries)
+- Improve the routing logic
+- Enhance the RAG retrieval quality
+- Add conversation memory persistence
+
+---
+
+**Built with ❤️ using LangGraph and Google Gemini**
